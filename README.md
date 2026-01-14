@@ -13,7 +13,14 @@ on the repos they are interested in: this repo contains internal components that
 
 ### Telemetry
 
-Telemetry is the first shared component in this repository. [Read about telemetry here.](telemetry/README.md)
+Telemetry is the first shared component in this repository. It provides code generators and definitions for generating telemetry calls across multiple languages and platforms:
+
+* **Java** - Using Gradle or Maven build integration
+* **Kotlin** - For JetBrains IDEs
+* **TypeScript** - For VS Code extensions
+* **C#** - For Visual Studio
+
+[Read about telemetry here.](telemetry/README.md)
 
 ## License
 

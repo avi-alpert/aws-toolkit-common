@@ -35,6 +35,101 @@ Make changes to the appropriate file in `definitions` in this repository, then f
 
 Your changes should then be reflected in the generated output.
 
+#### Java
+
+For Java projects, you can use the telemetry generator by adding it as a dependency in your build configuration. The generator works with both Gradle and Maven projects.
+
+**Gradle Configuration**
+
+Add the following to your `build.gradle` or `build.gradle.kts`:
+
+```gradle
+// In build.gradle
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'software.aws.toolkits:telemetry-generator:1.0'
+    }
+}
+
+// Import the task type
+import software.aws.toolkits.telemetry.generator.gradle.GenerateTelemetry
+
+// Define the telemetry generation task
+task generateTelemetry(type: GenerateTelemetry) {
+    inputFiles = [file('path/to/telemetry-definitions.json')]
+    outputDirectory = file('src/main/java/com/example/telemetry')
+}
+
+// Make compilation depend on telemetry generation
+compileJava.dependsOn(generateTelemetry)
+```
+
+**Maven Configuration**
+
+For Maven projects, you can use the exec-maven-plugin to run the generator:
+
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>exec-maven-plugin</artifactId>
+            <version>3.1.0</version>
+            <executions>
+                <execution>
+                    <id>generate-telemetry</id>
+                    <phase>generate-sources</phase>
+                    <goals>
+                        <goal>java</goal>
+                    </goals>
+                    <configuration>
+                        <mainClass>software.aws.toolkits.telemetry.generator.TelemetryGenerator</mainClass>
+                        <arguments>
+                            <argument>--input</argument>
+                            <argument>${project.basedir}/src/main/resources/telemetry-definitions.json</argument>
+                            <argument>--output</argument>
+                            <argument>${project.build.directory}/generated-sources/telemetry</argument>
+                        </arguments>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+```
+
+**Using Generated Telemetry in Java Code**
+
+Once generated, you can use the telemetry in your Java application:
+
+```java
+import software.aws.toolkits.telemetry.TelemetryPublisher;
+import software.aws.toolkits.telemetry.events.*;
+
+public class MyApplication {
+    private final TelemetryPublisher telemetry;
+    
+    public MyApplication(TelemetryPublisher telemetry) {
+        this.telemetry = telemetry;
+    }
+    
+    public void performAction() {
+        // Record a telemetry event
+        telemetry.record(
+            LambdaInvoke.builder()
+                .result(Result.SUCCEEDED)
+                .duration(1234.0)
+                .build()
+        );
+    }
+}
+```
+
+For prototyping, make changes to the appropriate file in `definitions` in this repository, then regenerate the telemetry code using the build tool commands above.
+
 #### Visual Studio
 
 For prototyping telemetry, and to define product-specific metrics, modify `toolkitcore\AWSToolkit.Util\Telemetry\vs-telemetry-definitions.json` inside the toolkit repository. These are known as Supplemental Telemetry definitions, and you can read more about this [here](csharp/README.md).
@@ -104,8 +199,9 @@ See the [telemetry format document](telemetryformat.md) for complete format spec
 
 ## Consuming Generators
 
-For specifics on how to consume the generators, see each IDE specific doc:
+For specifics on how to consume the generators, see each language/IDE specific doc:
 
--   [vscode](vscode/README.md)
--   [jetbrains](jetbrains/README.md)
--   [C#](csharp/README.md)
+-   [TypeScript/VS Code](vscode/README.md)
+-   [Kotlin/JetBrains](jetbrains/README.md)
+-   [Java](jetbrains/README.md) - Java projects can use the JetBrains/Kotlin generator, which produces JVM-compatible code
+-   [C#/Visual Studio](csharp/README.md)
